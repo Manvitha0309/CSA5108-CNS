@@ -1,0 +1,70 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#define MOD 26
+
+char freqOrder[] = "ETAOINSHRDLCUMWFGYPBVKJXQZ";
+
+// Structure to store results
+struct Result {
+    int key;
+    char text[200];
+    int score;
+};
+
+void decrypt(char *cipher, int key, char *plain) {
+    int i;
+    for(i=0; cipher[i]!='\0'; i++) {
+        if(isalpha(cipher[i]))
+            plain[i] = ((toupper(cipher[i])-'A' - key + MOD) % MOD) + 'A';
+        else
+            plain[i] = cipher[i];
+    }
+    plain[i] = '\0';
+}
+
+int scoreText(char *text) {
+    int count[26] = {0}, score = 0;
+    for(int i=0;text[i]; i++)
+        if(isalpha(text[i]))
+            count[toupper(text[i]) - 'A']++;
+    for(int i=0; i<26; i++)
+        score += count[freqOrder[i]-'A'] * (26 - i); // weighted
+    return score;
+}
+
+int main() {
+    char cipher[200];
+    int topN;
+    struct Result results[26];
+
+    // Input ciphertext and number of top candidates
+    printf("Enter ciphertext (UPPERCASE, no spaces): ");
+    scanf("%s", cipher);
+    printf("Enter number of top candidates to display: ");
+    scanf("%d", &topN);
+
+    for(int key=0; key<26; key++) {
+        decrypt(cipher, key, results[key].text);
+        results[key].key = key;
+        results[key].score = scoreText(results[key].text);
+    }
+
+    for(int i=0; i<25; i++) {
+        for(int j=i+1; j<26; j++) {
+            if(results[j].score > results[i].score) {
+                struct Result temp = results[i];
+                results[i] = results[j];
+                results[j] = temp;
+            }
+        }
+    }
+
+    printf("\nTop %d candidate plaintexts:\n", topN);
+    for(int i=0; i<topN && i<26; i++) {
+        printf("Key %2d | Score %4d | %s\n", results[i].key,
+               results[i].score, results[i].text);
+    }
+
+    return 0;
+}

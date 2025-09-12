@@ -1,0 +1,42 @@
+#include <stdio.h>
+
+// Extended Euclidean Algorithm
+int egcd(int a, int b, int *x, int *y) {
+    if (a == 0) {
+        *x = 0;
+        *y = 1;
+        return b;
+    }
+    int x1, y1;
+    int gcd = egcd(b % a, a, &x1, &y1);
+    *x = y1 - (b / a) * x1;
+    *y = x1;
+    return gcd;
+}
+
+// Multiplicative inverse
+int modInverse(int e, int phi) {
+    int x, y;
+    int g = egcd(e, phi, &x, &y);
+    if (g != 1) return -1; // inverse doesn't exist
+    else {
+        int res = (x % phi + phi) % phi;
+        return res;
+    }
+}
+
+int main() {
+    int e = 31;
+    int n = 3599;
+
+    // factors of n
+    int p = 59, q = 61;
+    int phi = (p - 1) * (q - 1);
+
+    int d = modInverse(e, phi);
+
+    printf("Public Key: (e=%d, n=%d)\n", e, n);
+    printf("Private Key: d=%d\n", d);
+
+    return 0;
+}

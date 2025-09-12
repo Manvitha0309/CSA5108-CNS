@@ -1,0 +1,33 @@
+#include <stdio.h>
+
+// XOR "cipher"
+unsigned char encrypt(unsigned char block, unsigned char key) {
+    return block ^ key;
+}
+
+// CTR mode (same for encrypt & decrypt)
+void ctr(unsigned char *in, unsigned char *out, int n,
+         unsigned char key, unsigned char counter) {
+    for (int i = 0; i < n; i++) {
+        unsigned char keystream = encrypt(counter, key);
+        out[i] = in[i] ^ keystream;
+        counter++; // next block
+    }
+}
+
+int main() {
+    unsigned char key = 0xFD;     // 0111111101 (last 8 bits = 11111101)
+    unsigned char ctr_start = 0x00;
+
+    unsigned char pt[3] = {0x01, 0x02, 0x04}; // 00000001 00000010 00000100
+    unsigned char ct[3], dt[3];
+
+    ctr(pt, ct, 3, key, ctr_start);   // encrypt
+    ctr(ct, dt, 3, key, ctr_start);   // decrypt
+
+    printf("Plain : %02X %02X %02X\n", pt[0], pt[1], pt[2]);
+    printf("Cipher: %02X %02X %02X\n", ct[0], ct[1], ct[2]);
+    printf("Decryp: %02X %02X %02X\n", dt[0], dt[1], dt[2]);
+
+    return 0;
+}

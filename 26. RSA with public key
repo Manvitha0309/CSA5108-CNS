@@ -1,0 +1,34 @@
+#include <stdio.h>
+
+int main() {
+    int n, e, d;
+    int new_e, new_d;
+
+    // Take original keys from user
+    printf("Enter modulus n: ");
+    scanf("%d", &n);
+
+    printf("Enter public key e: ");
+    scanf("%d", &e);
+
+    printf("Enter leaked private key d: ");
+    scanf("%d", &d);
+
+    printf("\nOriginal Public Key: (e=%d, n=%d)\n", e, n);
+    printf("Original Private Key leaked: d=%d\n", d);
+
+    // Bob tries to generate new keys with same n
+    printf("\nEnter new public key e: ");
+    scanf("%d", &new_e);
+
+    printf("Enter new private key d: ");
+    scanf("%d", &new_d);
+
+    printf("\nNew Public Key: (e=%d, n=%d)\n", new_e, n);
+    printf("New Private Key: d=%d\n", new_d);
+
+    printf("\n>>> Not Safe! Once d is leaked, n is compromised.\n");
+    printf("Bob must generate a new modulus (new p, q).\n");
+
+    return 0;
+}

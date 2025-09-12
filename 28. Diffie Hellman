@@ -1,0 +1,40 @@
+#include <stdio.h>
+#include <stdint.h>
+
+/* Fast modular exponentiation */
+uint64_t modexp(uint64_t base, uint64_t exp, uint64_t mod) {
+    uint64_t res = 1;
+    base %= mod;
+    while (exp) {
+        if (exp & 1) res = (__uint128_t)res * base % mod;
+        base = (__uint128_t)base * base % mod;
+        exp >>= 1;
+    }
+    return res;
+}
+
+int main() {
+    uint64_t p, g, a, b;
+    printf("Enter prime p: ");
+    scanf("%llu", &p);
+    printf("Enter generator g: ");
+    scanf("%llu", &g);
+
+    printf("Enter Alice's secret a: ");
+    scanf("%llu", &a);
+    printf("Enter Bob's secret b: ");
+    scanf("%llu", &b);
+
+    uint64_t A = modexp(g, a, p); // Alice sends
+    uint64_t B = modexp(g, b, p); // Bob sends
+
+    uint64_t Ka = modexp(B, a, p); // Alice's shared key
+    uint64_t Kb = modexp(A, b, p); // Bob's shared key
+
+    printf("\nAlice sends: %llu\n", (unsigned long long)A);
+    printf("Bob sends: %llu\n", (unsigned long long)B);
+    printf("Shared key (Alice): %llu\n", (unsigned long long)Ka);
+    printf("Shared key (Bob): %llu\n", (unsigned long long)Kb);
+
+    return 0;
+}

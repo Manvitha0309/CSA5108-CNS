@@ -1,0 +1,78 @@
+#include <stdio.h>
+#include <string.h>
+
+#define BLOCK_SIZE 8   // 8 bytes per block
+
+// XOR block cipher (toy encryption)
+void xor_block(unsigned char *block, unsigned char *key) {
+    for (int i = 0; i < BLOCK_SIZE; i++)
+        block[i] ^= key[i];
+}
+
+// ECB mode
+void ecb(unsigned char *data, int len, unsigned char *key) {
+    for (int i = 0; i < len; i += BLOCK_SIZE)
+        xor_block(data + i, key);
+}
+
+// CBC mode
+void cbc(unsigned char *data, int len, unsigned char *key, unsigned char *iv) {
+    for (int i = 0; i < len; i += BLOCK_SIZE) {
+        for (int j = 0; j < BLOCK_SIZE; j++)
+            data[i + j] ^= iv[j];     // XOR with IV
+        xor_block(data + i, key);     // Encrypt
+        memcpy(iv, data + i, BLOCK_SIZE); // Update IV
+    }
+}
+
+// CFB mode
+void cfb(unsigned char *data, int len, unsigned char *key, unsigned char *iv) {
+    for (int i = 0; i < len; i += BLOCK_SIZE) {
+        unsigned char temp[BLOCK_SIZE];
+        memcpy(temp, iv, BLOCK_SIZE);
+        xor_block(temp, key);         // Encrypt IV
+        for (int j = 0; j < BLOCK_SIZE; j++)
+            data[i + j] ^= temp[j];   // XOR with plaintext
+        memcpy(iv, data + i, BLOCK_SIZE); // Update IV
+    }
+}
+
+int main() {
+    unsigned char key[BLOCK_SIZE+1] = "mysecret"; // +1 for null terminator
+    unsigned char iv[BLOCK_SIZE+1] = "initvect";  // allow '\0'
+
+    unsigned char plaintext[BLOCK_SIZE * 2] = "HELLOWORLD"; // 10 bytes → 16 after padding
+    int len = strlen((char *)plaintext);
+
+    // --- Pad to multiple of BLOCK_SIZE ---
+    while (len % BLOCK_SIZE != 0) {
+        plaintext[len++] = 0x80; // simple pad
+    }
+
+    printf("Original: %s\n", plaintext);
+
+    // ECB
+    unsigned char data1[32]; memcpy(data1, plaintext, len);
+    ecb(data1, len, key);
+    printf("ECB: ");
+    for (int i = 0; i < len; i++) printf("%02X ", data1[i]);
+    printf("\n");
+
+    // CBC
+    unsigned char data2[32]; memcpy(data2, plaintext, len);
+    unsigned char iv1[BLOCK_SIZE]; memcpy(iv1, iv, BLOCK_SIZE);
+    cbc(data2, len, key, iv1);
+    printf("CBC: ");
+    for (int i = 0; i < len; i++) printf("%02X ", data2[i]);
+    printf("\n");
+
+    // CFB
+    unsigned char data3[32]; memcpy(data3, plaintext, len);
+    unsigned char iv2[BLOCK_SIZE]; memcpy(iv2, iv, BLOCK_SIZE);
+    cfb(data3, len, key, iv2);
+    printf("CFB: ");
+    for (int i = 0; i < len; i++) printf("%02X ", data3[i]);
+    printf("\n");
+
+    return 0;
+}

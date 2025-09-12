@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <stdint.h>
+
+// fast modular exponentiation: computes base^exp mod mod
+uint64_t modexp(uint64_t base, uint64_t exp, uint64_t mod) {
+    uint64_t res = 1 % mod;
+    base %= mod;
+    while (exp) {
+        if (exp & 1) res = (__uint128_t)res * base % mod;
+        base = (__uint128_t)base * base % mod;
+        exp >>= 1;
+    }
+    return res;
+}
+
+int main() {
+    uint64_t e, n;
+    int blocks;
+
+    printf("Enter public exponent e (decimal): ");
+    if (scanf("%llu", &e) != 1) return 0;
+    printf("Enter modulus n (decimal): ");
+    if (scanf("%llu", &n) != 1) return 0;
+
+    // precompute table for m = 0..25
+    uint64_t table[26];
+    for (int m = 0; m < 26; m++) {
+        table[m] = modexp((uint64_t)m, e, n);
+    }
+
+    printf("Enter number of ciphertext blocks: ");
+    if (scanf("%d", &blocks) != 1) return 0;
+
+    printf("Now enter each ciphertext block (decimal) one per line:\n");
+    for (int i = 0; i < blocks; i++) {
+        uint64_t c;
+        if (scanf("%llu", &c) != 1) return 0;
+
+        int found = -1;
+        for (int m = 0; m < 26; m++) {
+            if (table[m] == c) { found = m; break; }
+        }
+
+        if (found >= 0) {
+            // map 0->A, 1->B, ..., 25->Z
+            char letter = 'A' + found;
+            printf("Block %d: ciphertext=%llu -> plaintext=%d ('%c')\n", i, c, found, letter);
+        } else {
+            printf("Block %d: ciphertext=%llu -> plaintext not in 0..25 (unknown)\n", i, c);
+        }
+    }
+
+    return 0;
+}

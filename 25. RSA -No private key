@@ -1,0 +1,29 @@
+#include <stdio.h>
+
+// Function to compute gcd
+int gcd(int a, int b) {
+    while (b != 0) {
+        int temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a;
+}
+
+int main() {
+    int n = 3599;       // example n = 59 * 61
+    int e = 31;         // public key exponent
+    int M = 59;         // assume this plaintext block has common factor with n
+
+    int factor = gcd(M, n);
+
+    if (factor > 1 && factor < n) {
+        printf("We found a factor of n!\n");
+        printf("Factor = %d\n", factor);
+        printf("Other factor = %d\n", n / factor);
+    } else {
+        printf("No useful factor found.\n");
+    }
+
+    return 0;
+}

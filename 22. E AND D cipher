@@ -1,0 +1,59 @@
+#include <stdio.h>
+#include <string.h>
+
+#define BLOCK_SIZE 8  // block size = 8 bits
+
+// Simple block cipher: XOR with key
+unsigned char simple_encrypt(unsigned char block, unsigned char key) {
+    return block ^ key;
+}
+unsigned char simple_decrypt(unsigned char block, unsigned char key) {
+    return block ^ key; // XOR is symmetric
+}
+
+// CBC encryption
+void cbc_encrypt(unsigned char *plaintext, unsigned char *ciphertext, int blocks,
+                 unsigned char key, unsigned char iv) {
+    unsigned char prev = iv;
+    for (int i = 0; i < blocks; i++) {
+        unsigned char x = plaintext[i] ^ prev;
+        ciphertext[i] = simple_encrypt(x, key);
+        prev = ciphertext[i];
+    }
+}
+
+// CBC decryption
+void cbc_decrypt(unsigned char *ciphertext, unsigned char *plaintext, int blocks,
+                 unsigned char key, unsigned char iv) {
+    unsigned char prev = iv;
+    for (int i = 0; i < blocks; i++) {
+        unsigned char x = simple_decrypt(ciphertext[i], key);
+        plaintext[i] = x ^ prev;
+        prev = ciphertext[i];
+    }
+}
+
+int main() {
+    unsigned char key = 0x0F;       // toy key
+    unsigned char iv  = 0xAA;       // 10101010
+    unsigned char plaintext[2] = {0x01, 0x23}; // binary 00000001 00100011
+    unsigned char ciphertext[2], decrypted[2];
+
+    printf("Plaintext : ");
+    for (int i=0;i<2;i++) printf("%02X ", plaintext[i]);
+    printf("\n");
+
+    // Encrypt
+    cbc_encrypt(plaintext, ciphertext, 2, key, iv);
+    printf("Ciphertext: ");
+    for (int i=0;i<2;i++) printf("%02X ", ciphertext[i]);
+    printf("\n");
+
+    // Decrypt
+    cbc_decrypt(ciphertext, decrypted, 2, key, iv);
+    printf("Decrypted : ");
+    for (int i=0;i<2;i++) printf("%02X ", decrypted[i]);
+    printf("\n");
+
+    return 0;
+}
